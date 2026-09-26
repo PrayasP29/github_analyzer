@@ -2,8 +2,12 @@ import bcrypt from 'bcryptjs';
 import User, { EMAIL_PATTERN } from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 
-// ponytail: no dummy compare on a miss, so a bad email returns measurably faster than a wrong password.
-// Add a constant-time bcrypt.compare against a fixed hash if login timing ever needs to be indistinguishable.
+// Hash of a random 32-byte throwaway nobody knows, cost 10 to match the model.
+// Compared against when the email is unknown so both 401 paths cost the same
+// bcrypt work and cannot be told apart by timing. Regenerate with:
+// node -e "console.log(require('bcryptjs').hashSync(require('crypto').randomBytes(32).toString('base64url'), 10))"
+const DUMMY_HASH = '$2b$10$gFqtPnILDeWmr.b7OX2i7eHVR87tkaz02a0L6qYjJoez4S403eIi.';
+
 const publicUser = (user) => ({ id: user._id, name: user.name, email: user.email });
 
 export async function registerUser(req, res) {
@@ -43,7 +47,7 @@ export async function loginUser(req, res) {
 
   try {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
-    const passwordMatches = user && (await bcrypt.compare(password, user.password));
+    const passwordMatches = await bcrypt.compare(password, user ? user.password : DUMMY_HASH);
 
     if (!passwordMatches) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
