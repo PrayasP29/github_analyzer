@@ -1,0 +1,39 @@
+.app-shell {
+  min-height: 100svh;
+}
+
+.dashboard-shell {
+  min-height: 100svh;
+  background: #fcfcfd;
+  padding-top: 88px;
+}
+
+.dashboard-card {
+  border: 1px solid #e4e4e7;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(15, 15, 18, 0.04);
+}
+
+.field {
+  width: 100%;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.field:focus {
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
+}
+
+.landing-grid {
+  background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
