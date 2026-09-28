@@ -3,6 +3,7 @@ import { Link, NavLink, useSearchParams } from 'react-router-dom'
 
 import { useAuth } from '@/context/AuthContext'
 import { api } from '@/services/api'
+import ContributionHeatmap from '@/components/ContributionHeatmap'
 
 const languageColors = {
   JavaScript: '#f1e05a',
@@ -17,12 +18,33 @@ const languageColors = {
 
 const formatNumber = (value) => Number(value ?? 0).toLocaleString('en-US')
 
+const THEME_KEY = 'github-analyzer-dashboard-theme'
+const readTheme = () => localStorage.getItem(THEME_KEY) === 'dark'
+
+function ThemeToggle({ dark, onToggle }) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-3">
+      <span className="text-sm text-zinc-600 dark:text-zinc-400">Theme</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={dark}
+        aria-label={`Switch to ${dark ? 'light' : 'dark'} mode`}
+        onClick={onToggle}
+        className="relative h-6 w-11 shrink-0 rounded-full bg-zinc-200 transition-colors duration-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+      >
+        <span className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-[left] duration-200 dark:bg-zinc-100 ${dark ? 'left-[22px]' : 'left-0.5'}`} />
+      </button>
+    </div>
+  )
+}
+
 function StatCard({ label, value, hint }) {
   return (
     <div className="dashboard-card p-4">
-      <div className="text-[11px] font-medium tracking-[0.16em] text-zinc-400">{label}</div>
-      <div className="mt-2 text-[26px] font-semibold tracking-tight tabular-nums">{value}</div>
-      {hint && <div className="mt-1 text-[11px] text-zinc-400">{hint}</div>}
+      <div className="eyebrow">{label}</div>
+      <div className="numeral mt-2 text-[26px]">{value}</div>
+      {hint && <div className="meta mt-1">{hint}</div>}
     </div>
   )
 }
@@ -31,16 +53,16 @@ function ProfileCard({ profile }) {
   return (
     <section className="dashboard-card p-5 sm:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        <img src={profile.avatar} alt="" className="size-20 rounded-2xl ring-1 ring-zinc-200" />
+        <img src={profile.avatar} alt="" className="size-20 rounded-2xl ring-1 ring-zinc-200 dark:ring-zinc-700" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">{profile.name || profile.username}</h2>
-              <a href={profile.profileUrl} target="_blank" rel="noreferrer" className="text-sm text-zinc-500 underline-offset-2 hover:underline">@{profile.username}</a>
+              <h2 className="display-sm text-xl">{profile.name || profile.username}</h2>
+              <a href={profile.profileUrl} target="_blank" rel="noreferrer" className="text-sm text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400">@{profile.username}</a>
             </div>
-            <a href={profile.profileUrl} target="_blank" rel="noreferrer" className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50">View on GitHub ↗</a>
+            <a href={profile.profileUrl} target="_blank" rel="noreferrer" className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800">View on GitHub ↗</a>
           </div>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">{profile.bio || 'No bio provided.'}</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500 dark:text-zinc-400">{profile.bio || 'No bio provided.'}</p>
         </div>
       </div>
     </section>
@@ -65,23 +87,23 @@ function LanguageCard({ repositories }) {
 
   return (
     <section className="dashboard-card p-5">
-      <div className="text-[11px] font-medium tracking-[0.16em] text-zinc-400">LANGUAGES</div>
+      <div className="eyebrow">LANGUAGES</div>
       <div className="mt-4 space-y-3">
         {languages.length ? languages.map(({ name, share }) => {
           const color = languageColors[name] || '#a1a1aa'
           return (
             <div key={name} className="flex items-center gap-3 text-sm">
               <span className="size-2 shrink-0 rounded-full" style={{ background: color }} />
-              <span className="w-20 shrink-0 truncate text-zinc-700">{name}</span>
-              <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-100">
+              <span className="w-20 shrink-0 truncate text-zinc-700 dark:text-zinc-300">{name}</span>
+              <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <span className="block h-full rounded-full" style={{ width: `${share}%`, background: color }} />
               </span>
-              <span className="w-9 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-400">{share}%</span>
+              <span className="w-9 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-400 dark:text-zinc-500">{share}%</span>
             </div>
           )
-        }) : <p className="text-sm text-zinc-500">No languages reported.</p>}
+        }) : <p className="text-sm text-zinc-500 dark:text-zinc-400">No languages reported.</p>}
       </div>
-      {languages.length > 0 && <p className="mt-4 text-[11px] leading-4 text-zinc-400">Share of the {counted} {counted === 1 ? 'repository' : 'repositories'} reporting a language.</p>}
+      {languages.length > 0 && <p className="meta mt-4">Share of the {counted} {counted === 1 ? 'repository' : 'repositories'} reporting a language.</p>}
     </section>
   )
 }
@@ -98,18 +120,18 @@ function RepositoryList({ repositories }) {
     <section className="dashboard-card p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Repositories</h2>
-          <p className="mt-0.5 text-sm text-zinc-500">{repositories.length} public {repositories.length === 1 ? 'repository' : 'repositories'}</p>
+        <h2 className="display-sm text-lg">Repositories</h2>
+        <p className="meta mt-0.5">{repositories.length} public {repositories.length === 1 ? 'repository' : 'repositories'}</p>
         </div>
-        {filter.trim() && <div className="text-xs text-zinc-400">{shown.length} of {repositories.length} shown</div>}
+        {filter.trim() && <div className="text-xs text-zinc-400 dark:text-zinc-500">{shown.length} of {repositories.length} shown</div>}
       </div>
       <input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter by name, description or language" aria-label="Filter repositories" className="field mt-5" />
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        {repositories.length === 0 ? <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500 sm:col-span-2">No public repositories found.</div> : shown.length === 0 ? <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500 sm:col-span-2">No repositories match “{filter.trim()}”.</div> : shown.map((repo) => (
-          <article key={repo.url} className="flex h-full flex-col rounded-2xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300 hover:shadow-sm">
-            <a href={repo.url} target="_blank" rel="noreferrer" className="truncate text-sm font-semibold tracking-tight text-zinc-900 underline-offset-2 hover:underline">{repo.name} ↗</a>
-            <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-500">{repo.description || 'No description provided.'}</p>
-            <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-3 text-xs text-zinc-500">
+        {repositories.length === 0 ? <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400 sm:col-span-2">No public repositories found.</div> : shown.length === 0 ? <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400 sm:col-span-2">No repositories match “{filter.trim()}”.</div> : shown.map((repo) => (
+          <article key={repo.url} className="repo-card flex h-full flex-col rounded-2xl p-4">
+            <a href={repo.url} target="_blank" rel="noreferrer" className="truncate text-sm font-semibold tracking-tight text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-50">{repo.name} ↗</a>
+            <p className="mt-1 line-clamp-2 text-sm leading-5 text-zinc-500 dark:text-zinc-400">{repo.description || 'No description provided.'}</p>
+            <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-3 text-xs text-zinc-500 dark:text-zinc-400">
               {repo.language && <span className="flex items-center gap-1.5"><span className="size-2 rounded-full" style={{ background: languageColors[repo.language] || '#a1a1aa' }} />{repo.language}</span>}
               <span>★ {formatNumber(repo.stars)}</span><span>⑂ {formatNumber(repo.forks)}</span>
             </div>
@@ -128,21 +150,46 @@ export default function Dashboard() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [contributions, setContributions] = useState(null)
+  const [contributionsError, setContributionsError] = useState('')
+  const [contributionsLoading, setContributionsLoading] = useState(false)
   const resultsRef = useRef(null)
+  const [dark, setDark] = useState(readTheme)
+
+  const toggleTheme = () => {
+    const next = dark ? 'light' : 'dark'
+    localStorage.setItem(THEME_KEY, next)
+    setDark(next === 'dark')
+  }
 
   useEffect(() => {
     setDraft(username)
     if (!username) {
       setResult(null)
+      setContributions(null)
       return undefined
     }
+    // Both requests share this effect so they start in parallel and share one
+    // `cancelled` guard: a slow or superseded username can never overwrite newer
+    // data. Each chain handles its own failure, so a contributions error leaves
+    // profile, stats, languages and repositories untouched.
     let cancelled = false
     setLoading(true)
     setError('')
+    setContributions(null)
+    setContributionsError('')
+    setContributionsLoading(true)
+
     api.get(`/github/${encodeURIComponent(username)}`)
       .then(({ data }) => { if (!cancelled) setResult(data) })
       .catch((err) => { if (!cancelled) { setResult(null); setError(err.response?.data?.message || 'Could not reach the analyzer server.') } })
       .finally(() => { if (!cancelled) setLoading(false) })
+
+    api.get(`/github/${encodeURIComponent(username)}/contributions`)
+      .then(({ data }) => { if (!cancelled) setContributions(data) })
+      .catch(() => { if (!cancelled) { setContributions(null); setContributionsError('Unable to load contribution activity.') } })
+      .finally(() => { if (!cancelled) setContributionsLoading(false) })
+
     return () => { cancelled = true }
   }, [username])
 
@@ -175,41 +222,43 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="app-shell bg-[#fcfcfd]">
+    <div className={`app-shell bg-[#fcfcfd] text-zinc-900 transition-colors duration-200 dark:bg-[#09090b] dark:text-zinc-50 ${dark ? 'dark' : ''}`}>
       <div className="flex md:min-h-svh md:flex-row">
-        <aside className="flex shrink-0 flex-col gap-4 border-b border-zinc-200 bg-white/80 p-4 backdrop-blur-xl md:sticky md:top-0 md:h-svh md:w-[240px] md:border-b-0 md:border-r md:p-5">
+        <aside className="flex shrink-0 flex-col gap-4 border-b border-zinc-200 bg-white/80 p-4 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80 md:sticky md:top-0 md:h-svh md:w-[240px] md:border-b-0 md:border-r md:p-5">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="grid size-7 place-items-center rounded-full bg-zinc-900"><span className="size-2.5 rounded-full bg-white" /></span>
-            <span className="text-[15px] font-semibold tracking-tight text-zinc-900">GitHub Analyzer</span>
+            <span className="grid size-7 place-items-center rounded-full bg-zinc-900 dark:bg-zinc-50"><span className="size-2.5 rounded-full bg-white dark:bg-zinc-900" /></span>
+            <span className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">GitHub Analyzer</span>
           </Link>
 
-          <div className="min-w-0 border-y border-zinc-100 py-2 md:mt-2">
+          <div className="min-w-0 border-y border-zinc-100 py-2 dark:border-zinc-800 md:mt-2">
             <div className="truncate text-sm font-semibold tracking-tight">{user?.name}</div>
-            <div className="truncate text-xs text-zinc-500">{user?.email}</div>
+            <div className="truncate text-xs text-zinc-500 dark:text-zinc-400">{user?.email}</div>
           </div>
 
           <nav className="flex gap-2 md:flex-col md:gap-1">
-            <NavLink to="/dashboard" end className={({ isActive }) => `rounded-xl px-3 py-2 text-center text-sm font-medium transition md:text-left ${isActive ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'}`}>Dashboard</NavLink>
-            <Link to="/" className="rounded-xl px-3 py-2 text-center text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 md:text-left">Home</Link>
+            <NavLink to="/dashboard" end className={({ isActive }) => `rounded-xl px-3 py-2 text-center text-sm font-medium transition md:text-left ${isActive ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50'}`}>Dashboard</NavLink>
+            <Link to="/" className="rounded-xl px-3 py-2 text-center text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 md:text-left">Home</Link>
           </nav>
 
-          <p className="hidden rounded-2xl bg-zinc-50 p-3 text-xs leading-5 text-zinc-500 md:block">Analyze public profiles through your authenticated workspace.</p>
+          <p className="hidden rounded-2xl bg-zinc-50 p-3 text-xs leading-5 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400 md:block">Analyze public profiles through your authenticated workspace.</p>
 
-          <button onClick={logout} className="rounded-xl border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 md:mt-auto">Logout</button>
+          <ThemeToggle dark={dark} onToggle={toggleTheme} />
+
+          <button onClick={logout} className="rounded-xl border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 md:mt-auto">Logout</button>
         </aside>
 
         <main className="dashboard-shell min-w-0 flex-1">
-          <div className="mx-auto flex max-w-[1160px] flex-col gap-6 px-4 pb-10 sm:px-6">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-              <div><div className="text-[11px] font-medium tracking-[0.16em] text-zinc-400">GITHUB WORKSPACE</div><h1 className="mt-2 text-[28px] font-semibold tracking-tight">Welcome back, {user?.name?.split(' ')[0] || 'there'}.</h1><p className="mt-1 text-sm text-zinc-500">Search a profile and turn public data into useful context.</p></div>
-              <div className="text-xs text-zinc-400">Authenticated analyzer</div>
+          <div className="mx-auto flex max-w-[1160px] flex-col gap-4 px-4 pb-10 pt-5 sm:px-6 md:pt-7">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div><div className="eyebrow">GITHUB WORKSPACE</div><h1 className="display mt-1.5 text-[26px] text-zinc-900 dark:text-zinc-50">Welcome back, {user?.name?.split(' ')[0] || 'there'}.</h1><p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Search a profile and turn public data into useful context.</p></div>
+              <div className="text-xs text-zinc-400 dark:text-zinc-500">Authenticated analyzer</div>
             </div>
-            <form onSubmit={analyze} className="dashboard-card mt-6 flex flex-col gap-2 p-2 sm:flex-row"><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Enter a GitHub username" aria-label="GitHub username" className="field border-0 shadow-none focus:border-transparent focus:shadow-none" /><button className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800">Analyze profile <span aria-hidden>→</span></button></form>
+            <form onSubmit={analyze} className="dashboard-card flex flex-col gap-2 p-2 sm:flex-row"><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Enter a GitHub username" aria-label="GitHub username" className="field border-0 shadow-none focus:border-transparent focus:shadow-none" /><button className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">Analyze profile <span aria-hidden>→</span></button></form>
 
-            <div ref={resultsRef} className="mt-6 scroll-mt-6 space-y-4">
-              {!username &&<div className="dashboard-card border-dashed p-10 text-center"><div className="text-sm font-medium text-zinc-700">Your next profile starts here.</div><p className="mt-1 text-sm text-zinc-500">Enter a GitHub username above to see profile and repository insights.</p></div>}
-              {username && loading && <div className="dashboard-card p-10 text-center"><div className="mx-auto size-6 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900" /><p className="mt-4 text-sm text-zinc-500">Loading @{username}…</p></div>}
-              {username && error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"><strong className="font-semibold">Analysis unavailable.</strong> {error}</div>}
+            <div ref={resultsRef} className="scroll-mt-6 space-y-4">
+              {!username &&<div className="dashboard-card border-dashed p-10 text-center"><div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Your next profile starts here.</div><p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Enter a GitHub username above to see profile and repository insights.</p></div>}
+              {username && loading && <div className="dashboard-card p-10 text-center"><div className="mx-auto size-6 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-50" /><p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">Loading @{username}…</p></div>}
+              {username && error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"><strong className="font-semibold">Analysis unavailable.</strong> {error}</div>}
               {result && !loading && (
                 <>
                   <ProfileCard profile={result.profile} />
@@ -217,18 +266,19 @@ export default function Dashboard() {
                   <div className="grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
                     <LanguageCard repositories={result.repositories} />
                     <section className="dashboard-card flex flex-col p-5 sm:p-6">
-                      <div className="text-[11px] font-medium tracking-[0.16em] text-zinc-400">REPOSITORY INSIGHTS</div>
+                      <div className="eyebrow">REPOSITORY INSIGHTS</div>
                       <div className="mt-auto pt-6">
-                        <div className="flex items-end justify-between gap-4 border-t border-zinc-100 pt-4">
+                        <div className="flex items-end justify-between gap-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                           <div className="min-w-0">
-                            <div className="text-sm text-zinc-500">Total forks</div>
-                            <p className="mt-0.5 text-[11px] text-zinc-400">{returnedLabel}</p>
+                            <div className="text-sm text-zinc-500 dark:text-zinc-400">Total forks</div>
+                            <p className="meta mt-0.5">{returnedLabel}</p>
                           </div>
-                          <div className="shrink-0 text-[30px] font-semibold tracking-tight tabular-nums">{formatNumber(totals.forks)}</div>
+                          <div className="numeral shrink-0 text-[30px]">{formatNumber(totals.forks)}</div>
                         </div>
                       </div>
                     </section>
                   </div>
+                  <ContributionHeatmap data={contributions} loading={contributionsLoading} error={contributionsError} />
                   <RepositoryList repositories={result.repositories} />
                 </>
               )}

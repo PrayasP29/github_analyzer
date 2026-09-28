@@ -5,6 +5,13 @@
 .dashboard-shell {
   min-height: 100svh;
   background: #fcfcfd;
+  transition: background-color 200ms ease;
+}
+
+/* Descendant, not `.dashboard-shell.dark`: the `.dark` class lives on the
+   dashboard root, and .dashboard-shell is its <main> child. */
+.dark .dashboard-shell {
+  background: #09090b;
 }
 
 .dashboard-card {
@@ -12,6 +19,53 @@
   border-radius: 24px;
   background: #fff;
   box-shadow: 0 8px 30px rgba(15, 15, 18, 0.04);
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.dark .dashboard-card {
+  border-color: #27272a;
+  background: #18181b;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Repository cards only. `backdrop-filter` (not `filter`) so the repo text and
+   language dots stay crisp. The prefixed line is the Safari fallback; drop it
+   once the supported floor includes unprefixed backdrop-filter. */
+.repo-card {
+  border: 1px solid rgba(9, 9, 11, 0.08);
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 2px rgba(15, 15, 18, 0.04),
+    0 8px 24px rgba(15, 15, 18, 0.06);
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.repo-card:hover {
+  border-color: rgba(9, 9, 11, 0.16);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 1px 2px rgba(15, 15, 18, 0.06),
+    0 12px 32px rgba(15, 15, 18, 0.1);
+}
+
+.dark .repo-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark .repo-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 14px 38px rgba(0, 0, 0, 0.5);
 }
 
 .field {
@@ -22,12 +76,83 @@
   padding: 10px 12px;
   font-size: 14px;
   outline: none;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .field:focus {
   border-color: #18181b;
   box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
+}
+
+.dark .field {
+  border-color: #3f3f46;
+  background: #18181b;
+  color: #fafafa;
+}
+
+.dark .field:focus {
+  border-color: #52525b;
+  box-shadow: 0 0 0 3px rgba(63, 63, 70, 0.4);
+}
+
+.dark .field::placeholder {
+  color: #71717a;
+}
+
+/* ---- Type scale -------------------------------------------------------
+   One class per tier, so the hierarchy is declared once instead of being
+   re-typed as slightly different utility strings on every element. */
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.1;
+  color: #71717a;
+}
+
+/* 11px uppercase is small text, so it needs 4.5:1. The old zinc-500 measured
+   2.29:1 on #18181b; this is 5.25:1 and still dimmer than .meta, so the
+   eyebrow keeps reading as a label rather than competing with the value. */
+.dark .eyebrow {
+  color: #8b8b95;
+}
+
+/* Headings: geometric face, tighter tracking as size grows. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* Section headings sit a step below the page title. */
+.display-sm {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+/* Numerals: tabular so stat cards don't jitter between loads. */
+.numeral {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* Small muted text under a heading or beside a value. Asymmetric by necessity:
+   one neutral cannot clear 4.5:1 on both #fff and #18181b. */
+.meta {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #71717a;
+}
+
+.dark .meta {
+  color: #a1a1aa;
 }
 
 .landing-grid {

@@ -1,14 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Plus Jakarta Sans carries headings only; Inter stays body/UI. Same single
+   request as before - one more family in the existing URL, no new dependency. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 @import "./App.css" layer(components);
 
+/* Class-based dark mode. Scoped to a `.dark` ancestor the dashboard owns, so the
+   landing page and auth pages are never affected. ponytail: replaces the default
+   prefers-color-scheme strategy because the theme is per-route, not per-OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* The family lives on `body`, not `*`. A `*` rule is unlayered, so it outranks
+   everything in @layer components - including any font utility - and would pin
+   every element to Inter, making the display family unreachable. */
+body {
   font-family: var(--font-sans);
 }
 
@@ -35,6 +49,11 @@ input {
   outline-offset: 3px;
 }
 
+/* The neutral focus colour is invisible on dark surfaces. */
+.dark :focus-visible {
+  outline-color: #a1a1aa;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -43,4 +62,8 @@ input {
 ::-webkit-scrollbar-thumb {
   background: #d4d4d8;
   border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
 }
