@@ -1,4 +1,4 @@
-import { getGithubUser, getGithubRepositories } from '../services/githubService.js';
+import { getGithubUser, getGithubRepositories, getUserContributions } from '../services/githubService.js';
 
 // Charset sanity only. Whether a name exists is GitHub's call, so a too-long or
 // unused name falls through to their 404 instead of being pre-rejected as 400.
@@ -51,5 +51,25 @@ export async function getGithubProfile(req, res) {
     }
     console.error(error.message);
     res.status(502).json({ success: false, message: 'Unable to fetch data from GitHub' });
+  }
+}
+
+// The service already maps every GitHub/GraphQL failure onto a status and a
+// client-safe message, so this only translates that into the response shape.
+export async function getContributions(req, res) {
+  const { username } = req.params;
+
+  if (!USERNAME_PATTERN.test(username)) {
+    return res.status(400).json({ success: false, message: 'Invalid GitHub username' });
+  }
+
+  try {
+    res.status(200).json({ success: true, ...(await getUserContributions(username)) });
+  } catch (error) {
+    console.error(error.cause?.message || error.message);
+    res.status(error.status || 502).json({
+      success: false,
+      message: error.publicMessage || 'Unable to fetch data from GitHub',
+    });
   }
 }
