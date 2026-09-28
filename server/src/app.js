@@ -5,7 +5,18 @@ import githubRoutes from './routes/githubRoutes.js';
 
 const app = express();
 
-app.use(cors());
+// Origins allowed to call the API, comma-separated so staging/prod can be added
+// without code changes. Unset falls back to the Vite dev origin, so local dev
+// needs no config - but Render MUST set CLIENT_URL to the real deployed frontend
+// origin, otherwise every browser call is blocked. No credentials: auth is a
+// Bearer header from localStorage, not a cookie, so credentials:true would only
+// add cookie handling we don't use.
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
