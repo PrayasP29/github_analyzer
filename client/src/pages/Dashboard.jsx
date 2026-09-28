@@ -120,8 +120,8 @@ function RepositoryList({ repositories }) {
     <section className="dashboard-card p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-        <h2 className="display-sm text-lg">Repositories</h2>
-        <p className="meta mt-0.5">{repositories.length} public {repositories.length === 1 ? 'repository' : 'repositories'}</p>
+          <h2 className="display-sm text-lg">Repositories</h2>
+          <p className="meta mt-0.5">{repositories.length} public {repositories.length === 1 ? 'repository' : 'repositories'}</p>
         </div>
         {filter.trim() && <div className="text-xs text-zinc-400 dark:text-zinc-500">{shown.length} of {repositories.length} shown</div>}
       </div>
@@ -256,7 +256,7 @@ export default function Dashboard() {
             <form onSubmit={analyze} className="dashboard-card flex flex-col gap-2 p-2 sm:flex-row"><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Enter a GitHub username" aria-label="GitHub username" className="field border-0 shadow-none focus:border-transparent focus:shadow-none" /><button className="rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200">Analyze profile <span aria-hidden>→</span></button></form>
 
             <div ref={resultsRef} className="scroll-mt-6 space-y-4">
-              {!username &&<div className="dashboard-card border-dashed p-10 text-center"><div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Your next profile starts here.</div><p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Enter a GitHub username above to see profile and repository insights.</p></div>}
+              {!username && <div className="dashboard-card border-dashed p-10 text-center"><div className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Your next profile starts here.</div><p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Enter a GitHub username above to see profile and repository insights.</p></div>}
               {username && loading && <div className="dashboard-card p-10 text-center"><div className="mx-auto size-6 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-50" /><p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">Loading @{username}…</p></div>}
               {username && error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"><strong className="font-semibold">Analysis unavailable.</strong> {error}</div>}
               {result && !loading && (

@@ -40,9 +40,8 @@ export default function Navbar() {
                 key={link.label}
                 href={link.to}
                 onClick={(event) => goToAnchor(event, link.to)}
-                className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors ${
-                  location.pathname === link.to ? 'border border-zinc-200 bg-white text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
-                }`}>
+                className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors ${location.pathname === link.to ? 'border border-zinc-200 bg-white text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
+                  }`}>
                 {link.label}
               </a>
             ))}
